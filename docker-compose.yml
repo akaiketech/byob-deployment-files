@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  backend:
+    image: 651706766841.dkr.ecr.us-west-2.amazonaws.com/byob-backend-licensed-staging:v0.0.254
+    command: /start-django
+    ports:
+      - "8000:8000"
+    env_file:
+      - .backend.env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - dev-network
+
+  celery_worker:
+    image: 651706766841.dkr.ecr.us-west-2.amazonaws.com/byob-backend-licensed-staging:v0.0.254
+    command: /start-celeryworker
+    depends_on:
+      - db
+      - redis
+      - backend
+    env_file:
+      - .backend.env
+    networks:
+      - dev-network
+
+  frontend:
+    image: 651706766841.dkr.ecr.us-west-2.amazonaws.com/byob-frontend-staging:v0.0.121
+    network_mode: "host"
+    depends_on:
+      - backend
+    env_file:
+      - .frontend.env
+    volumes:
+      - /home/ubuntu/logs:/var/log/app
+
+
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+    networks:
+      - dev-network
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - dev-network
+    ports:
+      - 6379:6379
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  dev-network:
