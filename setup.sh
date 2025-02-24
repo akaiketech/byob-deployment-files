@@ -59,16 +59,20 @@ else
 fi
 
 print_section "Setting up AWS CLI"
+apt-get install -y unzip
+unzip awscliv2.zip
 if check_command aws; then
-    print_success "AWS CLI is already installed"
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+    print_success "AWS CLI updated successfully"
 else
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    apt-get install -y unzip
     unzip awscliv2.zip
-    ./aws/install
-    rm -rf aws awscliv2.zip
+    sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
     print_success "AWS CLI installed successfully"
 fi
+rm -rf aws awscliv2.zip
 
 print_section "Setting up Python 3.12"
 if python3.12 --version >/dev/null 2>&1; then
