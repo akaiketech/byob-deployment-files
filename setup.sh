@@ -74,7 +74,7 @@ else
 fi
 rm -rf aws awscliv2.zip
 
-print_section "Setting up Python 3.12"
+print_section "Setting up Python 3.12 and pip"
 if python3.12 --version >/dev/null 2>&1; then
     print_success "Python 3.12 is already installed"
 else
@@ -87,6 +87,23 @@ else
     print_success "Python 3.12 installed successfully"
 fi
 
+if python3.12 -m pip --version >/dev/null 2>&1; then
+    print_success "pip for Python 3.12 is already installed"
+else
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+    print_success "pip for Python 3.12 installed successfully"
+fi
+
+print_section "Adding current user to Docker group"
+if groups $USER | grep &>/dev/null '\bdocker\b'; then
+    print_success "User is already in the Docker group"
+else
+    sudo usermod -aG docker $USER
+    newgrp docker
+    print_success "User added to Docker group successfully"
+fi
+
+
 echo -e "\n${GREEN}✓ All installations completed successfully!${NC}"
 
 echo -e "\n${BLUE}Installed versions:${NC}"
@@ -94,4 +111,3 @@ echo -e "Docker: $(docker --version)"
 echo -e "Docker Compose: $(docker compose version)"
 echo -e "AWS CLI: $(aws --version)"
 echo -e "Python: $(python3 --version)"
-
